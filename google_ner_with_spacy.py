@@ -9,6 +9,9 @@ def google_ner(nlp: Language, name: str):
 class GoogleNERComponent:
     def __init__(self, nlp: Language):
         self.language = nlp.lang
+        # Type.UNKNOWN are mostly numbers
+        self.mention_types = {language_v2.EntityMention.Type.PROPER,
+                              language_v2.EntityMention.Type.TYPE_UNKNOWN}
         
     def span_exists(self, span, spans):
         for s in spans:
@@ -32,8 +35,7 @@ class GoogleNERComponent:
  
         for entity in response.entities:
             for mention in entity.mentions:                
-                # Type.UNKNOWN are mostly numbers
-                if mention.type_ != mention.Type.COMMON:
+                if mention.type_ in self.mention_types:
                     ent_start = mention.text.begin_offset
                     ent_end = ent_start+len(mention.text.content)
                     span = doc.char_span(ent_start, ent_end, label=language_v2.Entity.Type(entity.type_).name, alignment_mode='expand')
